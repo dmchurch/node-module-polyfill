@@ -49,6 +49,9 @@ export function poly_resolveLookupPaths(orig_resolveLookupPaths:typeof Module._r
 }
 
 export function poly_resolveFilename(orig_resolveFilename:typeof Module._resolveFilename):typeof Module._resolveFilename {
+  if ('_orig_resolveFilename' in orig_resolveFilename) {
+    orig_resolveFilename = (<any>orig_resolveFilename)._orig_resolveFilename;
+  }
   assert(!orig_resolveFilename.toString().includes("PoisonModule"));
   function _resolveFilename(request:string, parent:NodeModule, isMain:boolean, options?:{paths?:string[]}):string {
     try {
@@ -121,6 +124,7 @@ export function poly_resolveFilename(orig_resolveFilename:typeof Module._resolve
     }
     return filename;
   };
+  _resolveFilename._orig_resolveFilename = orig_resolveFilename;
   return _resolveFilename;
 }
 
