@@ -9,4 +9,9 @@ node_js:
   - 12.10
 os:
   - linux
-  - windows
+matrix:
+  include:
+    - os: windows
+      node_js: 8
+    - os: windows
+      node_js: node
