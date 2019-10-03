@@ -12,17 +12,22 @@ function hasArgument(func:Function, argName:string):boolean {
     return argmatch[1].split(/,\s*/).includes(argName);
 }
 
+function functionalTest<T extends any[],R>(func:(...args:T)=>R, ...args:T):R|false {
+    try {
+        return func(...args);
+    } catch (e) {
+        return false;
+    }
+}
+
 function requireTest(createRequire:((arg:any)=>(id:string)=>any)|undefined, requireArg:any,...moduleIds:string[]):boolean {
     if (!createRequire) {
         return false;
     }
-    try {
-        const requireFunc = createRequire(requireArg);
-        for (const moduleId of moduleIds) {
-            requireFunc(moduleId);
-        }
-    } catch (e) {
-        return false;
+    const requireFunc = functionalTest(createRequire, requireArg);
+    if (requireFunc === false) return false;
+    for (const moduleId of moduleIds) {
+        if (functionalTest(requireFunc,moduleId) === false) return false;
     }
     return true;
 }
@@ -53,7 +58,11 @@ if (typeof process.env.FORCE_NODE_MODULE_POLYFILL === "undefined" && semver.gte(
         Module._resolveLookupPaths = poly_resolveLookupPaths(Module._resolveLookupPaths);
     }
 
-    if (shouldOverride("_resolveFilename") || !hasArgument(Module._resolveFilename, "options")) {
+    const packageDir_name = path.basename(path.dirname(__dirname));
+
+    if (shouldOverride("_resolveFilename") ||
+        !hasArgument(Module._resolveFilename, "options") ||
+        functionalTest(Module._resolveFilename,`.${path.sep}${packageDir_name}${path.sep}package.json`,module,false,{paths:[path.resolve(__dirname,"..","..")]}) !== path.resolve(__dirname,"..","package.json")) {
         debug("overriding Module._resolveFilename()");
         Module._resolveFilename = poly_resolveFilename(Module._resolveFilename);
     }
