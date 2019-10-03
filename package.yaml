@@ -18,6 +18,7 @@ scripts:
   prepare: tsc
   test: jest
   coverage: jest --coverage
+  coveralls: jest --coverage --coverageReporters=text-lcov | coveralls
 
 jest:
   preset: ts-jest
@@ -48,3 +49,4 @@ devDependencies:
   "@types/jest": ^24.0.18
   jest-mock-console: ^1.0.0
   ts-jest: ^24.1.0
+  coveralls: ^3.0.6

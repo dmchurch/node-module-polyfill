@@ -15,3 +15,6 @@ matrix:
       node_js: 8
     - os: windows
       node_js: node
+    - os: linux
+      node_js: node
+      script: npm run coveralls
