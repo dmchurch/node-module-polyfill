@@ -8,7 +8,8 @@
         "build": "tsc",
         "watch": "tsc --watch",
         "prepare": "tsc",
-        "coverage": "jest --coverage"
+        "coverage": "jest --coverage",
+        "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
     },
     "repository": {
         "type": "git",

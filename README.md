@@ -1,4 +1,4 @@
-# node-module-polyfill [![Build Status](https://travis-ci.com/dmchurch/node-module-polyfill.svg?branch=master)](https://travis-ci.com/dmchurch/node-module-polyfill)
+# node-module-polyfill [![Build Status](https://travis-ci.com/dmchurch/node-module-polyfill.svg?branch=master)](https://travis-ci.com/dmchurch/node-module-polyfill) [![Coverage Status](https://coveralls.io/repos/github/dmchurch/node-module-polyfill/badge.svg)](https://coveralls.io/github/dmchurch/node-module-polyfill)
 
 A polyfill for Node.Module.
 
