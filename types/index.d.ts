@@ -1,6 +1,6 @@
 declare global {
     namespace NodeJS.Module {
-        var createRequire: ((filename: string | URL) => ((path: string) => any));
+        var createRequire: ((filename: string | URL) => NodeRequire);
     }
 }
 export {};

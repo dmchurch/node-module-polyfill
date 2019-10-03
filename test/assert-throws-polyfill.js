@@ -1,5 +1,5 @@
 'use strict';
-
+console.debug("in assert-throws-polyfill.js file");
 const assert = require('assert');
 
 function tryBlock(block) {

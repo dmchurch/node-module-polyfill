@@ -4,10 +4,11 @@
     "description": "Polyfills for the Node.Module interface",
     "main": "dist/index.js",
     "scripts": {
-        "test": "mocha",
+        "test": "jest",
         "build": "tsc",
         "watch": "tsc --watch",
-        "prepare": "tsc"
+        "prepare": "tsc",
+        "coverage": "jest --coverage"
     },
     "repository": {
         "type": "git",
@@ -27,14 +28,30 @@
     },
     "homepage": "https://github.com/dmchurch/node-module-polyfill#readme",
     "devDependencies": {
+        "@types/jest": "^24.0.18",
         "@types/semver": "^6.0.2",
-        "mocha": "^6.2.1",
+        "jest": "^24.9.0",
+        "jest-mock-console": "^1.0.0",
         "package-yaml": "^1.0.0",
+        "ts-jest": "^24.1.0",
         "typescript": "^3.6.3"
     },
     "dependencies": {
         "@types/node": "^12.7.8",
         "semver": "^6.3.0"
     },
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.ts",
+    "jest": {
+        "testEnvironment": "node",
+        "testMatch": [
+            "<rootDir>/test/init.ts",
+            "<rootDir>/test/test-*.ts"
+        ],
+        "testSequencer": "<rootDir>/test/sequencer",
+        "preset": "ts-jest",
+        "collectCoverageFrom": [
+            "<rootDir>/src/**/*.ts",
+            "<rootDir>/test/**/*.ts"
+        ]
+    }
 }

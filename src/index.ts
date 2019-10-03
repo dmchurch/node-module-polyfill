@@ -3,7 +3,7 @@
 import Module from 'module';
 import semver from 'semver';
 import path from 'path';
-import { getPath, poly_resolveLookupPaths, poly_resolveFilename, createRequire, createRequireFromPath } from './node-internals/module';
+import { poly_resolveLookupPaths, poly_resolveFilename, createRequire, createRequireFromPath, getPathDescriptor } from './node-internals/module';
 import { URL } from 'url';
 
 function hasArgument(func:Function, argName:string):boolean {
@@ -27,38 +27,50 @@ function requireTest(createRequire:((arg:any)=>(id:string)=>any)|undefined, requ
     return true;
 }
 
-if (semver.gte(process.versions.node, "12.2.0")) {
-    console.debug(`Node version ${process.versions.node} >= 12.2.0, not polyfilling`);
+function debug(...args:any[]):void {
+    if (process.env.DEBUG_NODE_MODULE_POLYFILL) {
+        console.debug(...args);
+    }
+}
+
+const forced_polyfills = (process.env.FORCE_NODE_MODULE_POLYFILL||"").split(":");
+
+function shouldOverride(prop:string):boolean {
+    return process.env.FORCE_NODE_MODULE_POLYFILL == "*" || forced_polyfills.includes(prop);
+}
+
+if (typeof process.env.FORCE_NODE_MODULE_POLYFILL === "undefined" && semver.gte(process.versions.node, "12.2.0")) {
+    debug(`Node version ${process.versions.node} >= 12.2.0, not polyfilling`);
 } else {
-    console.debug(`Node version ${process.versions.node} < 12.2.0, applying polyfills`);
+    debug(`Node version ${process.versions.node} < 12.2.0, applying polyfills`);
     if (!('path' in module)) {
-        console.debug("overriding module.path");
-        Object.defineProperty(Module.prototype, 'path', {
-            get: getPath,
-        })
+        debug("overriding module.path");
+        Object.defineProperty(Module.prototype, 'path', getPathDescriptor());
     }
 
-    if (hasArgument(Module._resolveLookupPaths, "newReturn")) {
-        console.debug("overriding Module._resolveLookupPaths()");
+    if (shouldOverride("_resolveLookupPaths") || hasArgument(Module._resolveLookupPaths, "newReturn")) {
+        debug("overriding Module._resolveLookupPaths()");
         Module._resolveLookupPaths = poly_resolveLookupPaths(Module._resolveLookupPaths);
     }
 
-    if (!hasArgument(Module._resolveFilename, "options")) {
-        console.debug("overriding Module._resolveFilename()");
+    if (shouldOverride("_resolveFilename") || !hasArgument(Module._resolveFilename, "options")) {
+        debug("overriding Module._resolveFilename()");
         Module._resolveFilename = poly_resolveFilename(Module._resolveFilename);
     }
 
-    if (!requireTest(Module.createRequireFromPath, __filename, "./node-internals/module") ||
+    if (shouldOverride("createRequireFromPath") ||
+        !requireTest(Module.createRequireFromPath, __filename, "./node-internals/module") ||
         !requireTest(Module.createRequireFromPath, path.join(__dirname,path.sep), "./node-internals/module")) {
-        console.debug("overriding Module.createRequireFromPath()");
+        debug("overriding Module.createRequireFromPath()");
         Module.createRequireFromPath = createRequireFromPath;
     }
 
-    if (!requireTest(Module.createRequire, __filename, "./node-internals/module") ||
+    if (shouldOverride("createRequire") ||
+        !requireTest(Module.createRequire, __filename, "./node-internals/module") ||
         !requireTest(Module.createRequire, path.join(__dirname,path.sep), "./node-internals/module") ||
         !requireTest(Module.createRequire, new URL(`file://${__filename}`), "./node-internals/module")) {
-        console.debug("overriding Module.createRequire()");
-        Module.createRequire = createRequire;
+        debug("overriding Module.createRequire()");
+        Module.createRequire = createRequire as any;
     }
 
 }

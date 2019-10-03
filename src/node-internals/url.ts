@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-const isWindows = platform === 'win32';
+const isWindows = (platform === 'win32' || process.env.__TEST_WIN32_API);
 const forwardSlashRegEx = /\//g;
 
 function getPathFromURLWin32(url:URL) {
@@ -69,7 +69,8 @@ function getPathFromURLPosix(url:URL) {
   return decodeURIComponent(pathname);
 }
 
-function poly_fileURLToPath(pathArg:string|URL):string {
+// exported for testing
+export function poly_fileURLToPath(pathArg:string|URL):string {
   const path:URL = typeof pathArg === 'string' ? new URL(pathArg) : pathArg;
   if (path == null || !(path instanceof URL))
     throw new ERR_INVALID_ARG_TYPE('path', ['string', 'URL'], path);

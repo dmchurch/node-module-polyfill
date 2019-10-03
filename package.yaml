@@ -16,7 +16,19 @@ scripts:
   build: tsc
   watch: tsc --watch
   prepare: tsc
-  test: mocha
+  test: jest
+  coverage: jest --coverage
+
+jest:
+  preset: ts-jest
+  testEnvironment: node
+  testMatch:
+    - <rootDir>/test/init.ts
+    - <rootDir>/test/test-*.ts
+  testSequencer: <rootDir>/test/sequencer
+  collectCoverageFrom:
+    - <rootDir>/src/**/*.ts
+    - <rootDir>/test/**/*.ts
 
 repository:
   type: git
@@ -29,7 +41,10 @@ dependencies:
   "@types/node": ^12.7.8
   semver: ^6.3.0
 devDependencies:
-  mocha: ^6.2.1
   package-yaml: ^1.0.0
   typescript: ^3.6.3
   "@types/semver": ^6.0.2
+  jest: ^24.9.0
+  "@types/jest": ^24.0.18
+  jest-mock-console: ^1.0.0
+  ts-jest: ^24.1.0

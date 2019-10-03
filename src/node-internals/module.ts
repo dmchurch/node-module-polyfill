@@ -1,5 +1,6 @@
 import path from 'path';
 import Module from 'module';
+import assert from 'assert';
 import { URL } from 'url';
 import { fileURLToPath } from './url';
 import { ERR_INVALID_ARG_VALUE, ERR_INVALID_OPT_VALUE } from './error';
@@ -33,8 +34,10 @@ declare global {
 class PoisonModule extends Module {
   constructor() { super('poison-module');}
   get id():string { throw "Poisoned";}
+  set id(_:string) { } // gets called during constructor
 
   get filename():string { throw "Poisoned";}
+  set filename(_:string) { } // gets called during constructor
   get paths():string[] { throw "Poisoned";}
 }
 
@@ -46,6 +49,7 @@ export function poly_resolveLookupPaths(orig_resolveLookupPaths:typeof Module._r
 }
 
 export function poly_resolveFilename(orig_resolveFilename:typeof Module._resolveFilename):typeof Module._resolveFilename {
+  assert(!orig_resolveFilename.toString().includes("PoisonModule"));
   function _resolveFilename(request:string, parent:NodeModule, isMain:boolean, options?:{paths?:string[]}):string {
     try {
       // If {request} is a valid internal module, orig_resolveFilename will return it without
@@ -54,7 +58,11 @@ export function poly_resolveFilename(orig_resolveFilename:typeof Module._resolve
       if (simpleResolve === request) {
         return request;
       }
-    } catch {}
+    } catch (e) {
+      if (e !== "Poisoned") {
+        throw e;
+      }
+    }
 
     var paths:string[];
 
@@ -116,7 +124,7 @@ export function poly_resolveFilename(orig_resolveFilename:typeof Module._resolve
   return _resolveFilename;
 }
 
-function makeRequireFunction(mod:NodeModule, _redirects:null):NodeRequireFunction {
+function makeRequireFunction(mod:NodeModule, _redirects:null):NodeRequire {
   const Module = mod.constructor as typeof NodeJS.Module;
 
   let require:NodeRequire;
@@ -182,6 +190,18 @@ export function createRequireFromPath(filename:string) {
   return makeRequireFunction(m, null);
 }
 
-export function getPath(this:NodeModule) {
-  return path.dirname(this.id);
+export function getPathDescriptor():PropertyDescriptor {
+  return {
+    get: function getPath(this:NodeModule):string {
+      return path.dirname(this.id);
+    },
+    set: function setPath(this:NodeModule, value:string):void {
+      Object.defineProperty(this, "path", {
+        value: value,
+        configurable: true,
+        writable: true,
+      })
+    },
+    configurable: true,
+  };
 }

@@ -1,4 +1,4 @@
-const isWindows = process.platform === 'win32';
+const isWindows = (process.platform === 'win32' || process.env.__TEST_WIN32_API);
 
 export = {
   // Alphabet chars.
